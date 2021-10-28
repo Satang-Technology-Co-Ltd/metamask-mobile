@@ -296,7 +296,7 @@ class Engine {
 	refreshTransactionHistory = async (forceCheck: any) => {
 		const { TransactionController, PreferencesController, NetworkController } = this.context;
 		const { selectedAddress } = PreferencesController.state;
-		const { type: networkType } = NetworkController.state.provider;
+		const { type: networkType, chainId } = NetworkController.state.provider;
 		const { networkId } = Networks[networkType];
 		try {
 			const lastIncomingTxBlockInfoStr = await AsyncStorage.getItem(LAST_INCOMING_TX_BLOCK_INFO);
@@ -308,7 +308,7 @@ class Engine {
 			const { rpcTarget } = NetworkController.state.provider;
 			const firoLastBlockBlockNumber = await jsonRpcRequest(rpcTarget, 'eth_blockNumber');
 
-			if (firoLastBlockBlockNumber !== lastIncomingTxBlockFiro) {
+			if (firoLastBlockBlockNumber !== lastIncomingTxBlockFiro && chainId === '8890') {
 				const firoLastBlock = await jsonRpcRequest(rpcTarget, 'eth_getBlockByNumber', [
 					firoLastBlockBlockNumber,
 					true,
