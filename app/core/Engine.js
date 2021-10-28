@@ -293,10 +293,6 @@ class Engine {
 		AccountTrackerController.refresh();
 	}
 
-	verifyTransaction = async (tx) => {
-		
-	}
-
 	refreshTransactionHistory = async (forceCheck: any) => {
 		const { TransactionController, PreferencesController, NetworkController } = this.context;
 		const { selectedAddress } = PreferencesController.state;
@@ -304,31 +300,38 @@ class Engine {
 		const { networkId } = Networks[networkType];
 		try {
 			const lastIncomingTxBlockInfoStr = await AsyncStorage.getItem(LAST_INCOMING_TX_BLOCK_INFO);
-			const lastIncomingTxBlockFiro = await AsyncStorage.getItem("firoLastBlockBlockNumber");
+			const lastIncomingTxBlockFiro = await AsyncStorage.getItem('firoLastBlockBlockNumber');
 			const allLastIncomingTxBlocks =
 				(lastIncomingTxBlockInfoStr && JSON.parse(lastIncomingTxBlockInfoStr)) || {};
 			let blockNumber = null;
 
-			const { rpcTarget } = NetworkController.state.provider
+			const { rpcTarget } = NetworkController.state.provider;
 			const firoLastBlockBlockNumber = await jsonRpcRequest(rpcTarget, 'eth_blockNumber');
 
 			if (firoLastBlockBlockNumber !== lastIncomingTxBlockFiro) {
-				const firoLastBlock = await jsonRpcRequest(rpcTarget, 'eth_getBlockByNumber', [firoLastBlockBlockNumber, true]);
+				const firoLastBlock = await jsonRpcRequest(rpcTarget, 'eth_getBlockByNumber', [
+					firoLastBlockBlockNumber,
+					true,
+				]);
 
-				firoLastBlock.transactions.map(async (tx) => {
-					const rpcUrlFiro = "http://x:y@192.168.2.40:8545/";
-					const rpcMethod = "getrawtransaction";
+				firoLastBlock.transactions.forEach(async (tx) => {
+					const rpcUrlFiro = 'http://x:y@192.168.2.40:8545/';
+					const rpcMethod = 'getrawtransaction';
 
 					const txId = tx.hash.substring(2);
 					const rawTx = await jsonRpcRequest(rpcUrlFiro, rpcMethod, [txId, false]);
 					const txIn = bitcore.Transaction(rawTx);
 					const scriptSig = txIn.inputs[0].script;
 					const witnesses = txIn.inputs[0].getWitnesses();
-					const satoshis = txIn.outputs.reduce((previousValue, currentValue) => { return previousValue._satoshis + currentValue._satoshis });
+					const satoshis = txIn.outputs.reduce(
+						(previousValue, currentValue) => previousValue._satoshis + currentValue._satoshis
+					);
 
-					const flags = bitcore.Script.Interpreter.SCRIPT_VERIFY_P2SH | bitcore.Script.Interpreter.SCRIPT_VERIFY_WITNESS_PUBKEYTYPE;
+					const flags =
+						bitcore.Script.Interpreter.SCRIPT_VERIFY_P2SH |
+						bitcore.Script.Interpreter.SCRIPT_VERIFY_WITNESS_PUBKEYTYPE;
 					const prevHash = txIn.inputs[0].prevTxId.toString('hex');
-					if (prevHash !== "0000000000000000000000000000000000000000000000000000000000000000") {
+					if (prevHash !== '0000000000000000000000000000000000000000000000000000000000000000') {
 						const txOutHex = await jsonRpcRequest(rpcUrlFiro, rpcMethod, [prevHash, false]);
 						const txOut = bitcore.Transaction(txOutHex);
 						const scriptPubkey = txOut.outputs[0].script;
@@ -336,8 +339,9 @@ class Engine {
 						const check = interpreter.verify(scriptSig, scriptPubkey, txIn, 0, flags, witnesses, satoshis);
 						console.log(`Verify: ${txId} ${check}`);
 					}
-					await AsyncStorage.setItem("firoLastBlockBlockNumber", firoLastBlockBlockNumber);
-				})
+
+					await AsyncStorage.setItem('firoLastBlockBlockNumber', firoLastBlockBlockNumber);
+				});
 			}
 
 			if (
