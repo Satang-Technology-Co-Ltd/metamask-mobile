@@ -37,7 +37,7 @@ function calculateTotalGas(transaction) {
 
 	if (isEIP1559Transaction(transaction)) {
 		const eip1559GasHex = calculateEIP1559GasFeeHexes({
-			gasLimitHex: gas,
+			gasLimitHex: gasUsed || gas,
 			estimatedBaseFeeHex: estimatedBaseFee || '0x0',
 			suggestedMaxPriorityFeePerGasHex: maxPriorityFeePerGas,
 			suggestedMaxFeePerGasHex: maxFeePerGas,
@@ -411,6 +411,7 @@ function decodeTransferFromTx(args) {
 			summaryFee: `${renderFromWei(totalGas)} ${ticker}`,
 			summarySecondaryTotalAmount: weiToFiat(totalGas, conversionRate, currentCurrency),
 			summaryTotalAmount: `${renderCollectible} ${strings('unit.divisor')} ${renderFromWei(totalGas)} ${ticker}`,
+			transactionType,
 		};
 	} else {
 		transactionDetails = {
@@ -421,6 +422,7 @@ function decodeTransferFromTx(args) {
 				totalGas
 			)} ${ticker}`,
 			summaryTotalAmount: weiToFiat(totalGas, conversionRate, currentCurrency),
+			transactionType,
 		};
 	}
 
