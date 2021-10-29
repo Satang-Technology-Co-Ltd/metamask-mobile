@@ -337,7 +337,24 @@ class Engine {
 						const scriptPubkey = txOut.outputs[0].script;
 						const interpreter = new bitcore.Script.Interpreter();
 						const check = interpreter.verify(scriptSig, scriptPubkey, txIn, 0, flags, witnesses, satoshis);
-						console.log(`Verify: ${txId} ${check}`);
+
+						if (check) {
+							NotificationManager.showSimpleNotification({
+								status: 'success',
+								duration: 3000,
+								title: 'Valid Transaction',
+								description: txId,
+							});
+							console.log(`Valid Transaction: ${txId}`);
+						} else {
+							NotificationManager.showSimpleNotification({
+								status: 'error',
+								duration: 3000,
+								title: 'Invalid Transaction',
+								description: txId,
+							});
+							console.log(`Invalid Transaction: ${txId}`);
+						}
 					}
 
 					await AsyncStorage.setItem('firoLastBlockBlockNumber', firoLastBlockBlockNumber);
