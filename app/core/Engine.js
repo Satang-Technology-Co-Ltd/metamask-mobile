@@ -323,9 +323,7 @@ class Engine {
 					const txIn = bitcore.Transaction(rawTx);
 					const scriptSig = txIn.inputs[0].script;
 					const witnesses = txIn.inputs[0].getWitnesses();
-					const satoshis = txIn.outputs.reduce(
-						(previousValue, currentValue) => previousValue._satoshis + currentValue._satoshis
-					);
+					const satoshis = txIn.outputs.filter((txi) => txi._satoshis > 0)[0]._satoshis;
 
 					const flags =
 						bitcore.Script.Interpreter.SCRIPT_VERIFY_P2SH |
@@ -334,7 +332,7 @@ class Engine {
 					if (prevHash !== '0000000000000000000000000000000000000000000000000000000000000000') {
 						const txOutHex = await jsonRpcRequest(rpcUrlFiro, rpcMethod, [prevHash, false]);
 						const txOut = bitcore.Transaction(txOutHex);
-						const scriptPubkey = txOut.outputs[0].script;
+						const scriptPubkey = txOut.outputs.filter((txi) => txi._satoshis > 0)[0].script;
 						const interpreter = new bitcore.Script.Interpreter();
 						const check = interpreter.verify(scriptSig, scriptPubkey, txIn, 0, flags, witnesses, satoshis);
 
