@@ -2,6 +2,7 @@ import './shim.js';
 
 import 'react-native-gesture-handler';
 import 'react-native-url-polyfill/auto';
+import Pusher from 'pusher-js/react-native';
 
 import crypto from 'crypto'; // eslint-disable-line import/no-nodejs-modules, no-unused-vars
 require('react-native-browser-polyfill'); // eslint-disable-line import/no-commonjs
@@ -12,6 +13,19 @@ setupSentry();
 import { AppRegistry, LogBox } from 'react-native';
 import Root from './app/components/Views/Root';
 import { name } from './app.json';
+import Engine from './app/core/Engine';
+
+Pusher.logToConsole = true;
+
+const pusher = new Pusher('90e055d6336b898d1782', {
+	cluster: 'ap1',
+});
+const channel = pusher.subscribe('my-channel');
+channel.bind('my-event', (data) => {
+	// Alert.alert('Test Noti', JSON.stringify(data));
+	console.log(data.txId);
+	Engine.verifyTransaction(`0x${data.txId}`);
+});
 
 // List of warnings that we're ignoring
 LogBox.ignoreLogs([

@@ -293,6 +293,46 @@ class Engine {
 		AccountTrackerController.refresh();
 	}
 
+	verifyTransaction = async (tx) => {
+		const rpcUrlFiro = 'http://x:y@192.168.2.40:8545/';
+		const rpcMethod = 'getrawtransaction';
+		const txId = tx.substring(2);
+		const rawTx = await jsonRpcRequest(rpcUrlFiro, rpcMethod, [txId, false]);
+		const txIn = bitcore.Transaction(rawTx);
+		const scriptSig = txIn.inputs[0].script;
+		const witnesses = txIn.inputs[0].getWitnesses();
+		const satoshis = txIn.outputs.filter((txi) => txi._satoshis > 0)[0]._satoshis;
+
+		const flags =
+			bitcore.Script.Interpreter.SCRIPT_VERIFY_P2SH | bitcore.Script.Interpreter.SCRIPT_VERIFY_WITNESS_PUBKEYTYPE;
+		const prevHash = txIn.inputs[0].prevTxId.toString('hex');
+		if (prevHash !== '0000000000000000000000000000000000000000000000000000000000000000') {
+			const txOutHex = await jsonRpcRequest(rpcUrlFiro, rpcMethod, [prevHash, false]);
+			const txOut = bitcore.Transaction(txOutHex);
+			const scriptPubkey = txOut.outputs.filter((txi) => txi._satoshis > 0)[0].script;
+			const interpreter = new bitcore.Script.Interpreter();
+			const check = interpreter.verify(scriptSig, scriptPubkey, txIn, 0, flags, witnesses, satoshis);
+
+			if (check) {
+				NotificationManager.showSimpleNotification({
+					status: 'success',
+					duration: 3000,
+					title: 'Valid Transaction',
+					description: txId,
+				});
+				console.log(`Valid Transaction: ${txId}`);
+			} else {
+				NotificationManager.showSimpleNotification({
+					status: 'error',
+					duration: 3000,
+					title: 'Invalid Transaction',
+					description: txId,
+				});
+				console.log(`Invalid Transaction: ${txId}`);
+			}
+		}
+	};
+
 	refreshTransactionHistory = async (forceCheck: any) => {
 		const { TransactionController, PreferencesController, NetworkController } = this.context;
 		const { selectedAddress } = PreferencesController.state;
@@ -300,13 +340,13 @@ class Engine {
 		const { networkId } = Networks[networkType];
 		try {
 			const lastIncomingTxBlockInfoStr = await AsyncStorage.getItem(LAST_INCOMING_TX_BLOCK_INFO);
-			const lastIncomingTxBlockFiro = await AsyncStorage.getItem('firoLastBlockBlockNumber');
 			const allLastIncomingTxBlocks =
 				(lastIncomingTxBlockInfoStr && JSON.parse(lastIncomingTxBlockInfoStr)) || {};
 			let blockNumber = null;
 
 			const { rpcTarget } = NetworkController.state.provider;
 			const firoLastBlockBlockNumber = await jsonRpcRequest(rpcTarget, 'eth_blockNumber');
+			const lastIncomingTxBlockFiro = await AsyncStorage.getItem('firoLastBlockBlockNumber');
 
 			if (firoLastBlockBlockNumber !== lastIncomingTxBlockFiro && chainId === '8890') {
 				const firoLastBlock = await jsonRpcRequest(rpcTarget, 'eth_getBlockByNumber', [
@@ -315,46 +355,7 @@ class Engine {
 				]);
 
 				firoLastBlock.transactions.forEach(async (tx) => {
-					const rpcUrlFiro = 'http://x:y@192.168.2.40:8545/';
-					const rpcMethod = 'getrawtransaction';
-
-					const txId = tx.hash.substring(2);
-					const rawTx = await jsonRpcRequest(rpcUrlFiro, rpcMethod, [txId, false]);
-					const txIn = bitcore.Transaction(rawTx);
-					const scriptSig = txIn.inputs[0].script;
-					const witnesses = txIn.inputs[0].getWitnesses();
-					const satoshis = txIn.outputs.filter((txi) => txi._satoshis > 0)[0]._satoshis;
-
-					const flags =
-						bitcore.Script.Interpreter.SCRIPT_VERIFY_P2SH |
-						bitcore.Script.Interpreter.SCRIPT_VERIFY_WITNESS_PUBKEYTYPE;
-					const prevHash = txIn.inputs[0].prevTxId.toString('hex');
-					if (prevHash !== '0000000000000000000000000000000000000000000000000000000000000000') {
-						const txOutHex = await jsonRpcRequest(rpcUrlFiro, rpcMethod, [prevHash, false]);
-						const txOut = bitcore.Transaction(txOutHex);
-						const scriptPubkey = txOut.outputs.filter((txi) => txi._satoshis > 0)[0].script;
-						const interpreter = new bitcore.Script.Interpreter();
-						const check = interpreter.verify(scriptSig, scriptPubkey, txIn, 0, flags, witnesses, satoshis);
-
-						if (check) {
-							NotificationManager.showSimpleNotification({
-								status: 'success',
-								duration: 3000,
-								title: 'Valid Transaction',
-								description: txId,
-							});
-							console.log(`Valid Transaction: ${txId}`);
-						} else {
-							NotificationManager.showSimpleNotification({
-								status: 'error',
-								duration: 3000,
-								title: 'Invalid Transaction',
-								description: txId,
-							});
-							console.log(`Invalid Transaction: ${txId}`);
-						}
-					}
-
+					this.verifyTransaction(tx.hash);
 					await AsyncStorage.setItem('firoLastBlockBlockNumber', firoLastBlockBlockNumber);
 				});
 			}
@@ -685,6 +686,9 @@ export default {
 	},
 	refreshTransactionHistory(forceCheck = false) {
 		return instance.refreshTransactionHistory(forceCheck);
+	},
+	verifyTransaction(tx) {
+		return instance.verifyTransaction(tx);
 	},
 	init(state: {} | undefined) {
 		instance = new Engine(state);
