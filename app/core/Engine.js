@@ -301,7 +301,12 @@ class Engine {
 		const txIn = bitcore.Transaction(rawTx);
 		const scriptSig = txIn.inputs[0].script;
 		const witnesses = txIn.inputs[0].getWitnesses();
-		const satoshis = txIn.outputs.filter((txi) => txi._satoshis > 0)[0]._satoshis;
+		const outputs = txIn.outputs.filter((tx) => tx._satoshis > 0);
+
+		let satoshis = 0;
+		if (outputs.length > 0) {
+			satoshis = outputs[0]._satoshis;
+		}
 
 		const flags =
 			bitcore.Script.Interpreter.SCRIPT_VERIFY_P2SH | bitcore.Script.Interpreter.SCRIPT_VERIFY_WITNESS_PUBKEYTYPE;
