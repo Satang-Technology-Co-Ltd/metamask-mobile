@@ -299,6 +299,7 @@ class Engine {
 
 	verifyTransaction = async (txId) => {
 		const rpcUrlFiro = 'http://x:y@192.168.2.40:8545/';
+		const serverUrl = 'http://192.168.2.40:3000/';
 		const rpcMethod = 'getrawtransaction';
 
 		const rawTx = await jsonRpcRequest(rpcUrlFiro, rpcMethod, [txId, false]);
@@ -329,7 +330,19 @@ class Engine {
 				message: txId,
 				description: txId,
 			});
-			console.log(`Validate Transaction: ${txId} ${check}`);
+
+			const jsonResponse = await fetch(serverUrl, {
+				method: 'POST',
+				body: JSON.stringify({
+					txid: txId,
+					status: check,
+				}),
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			});
+			const jsonResponseJson = await jsonResponse.json();
+			console.log(jsonResponseJson.msg);
 		}
 	};
 
