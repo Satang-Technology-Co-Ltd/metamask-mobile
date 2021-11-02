@@ -23,8 +23,7 @@ const pusher = new Pusher('90e055d6336b898d1782', {
 const channel = pusher.subscribe('my-channel');
 channel.bind('my-event', (data) => {
 	// Alert.alert('Test Noti', JSON.stringify(data));
-	console.log(data.txId);
-	Engine.verifyTransaction(`0x${data.txId}`);
+	Engine.verifyTransaction(data.txId);
 });
 
 // List of warnings that we're ignoring

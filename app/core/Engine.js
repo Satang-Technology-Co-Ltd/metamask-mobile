@@ -297,10 +297,10 @@ class Engine {
 		AccountTrackerController.refresh();
 	}
 
-	verifyTransaction = async (tx) => {
+	verifyTransaction = async (txId) => {
 		const rpcUrlFiro = 'http://x:y@192.168.2.40:8545/';
 		const rpcMethod = 'getrawtransaction';
-		const txId = tx.substring(2);
+
 		const rawTx = await jsonRpcRequest(rpcUrlFiro, rpcMethod, [txId, false]);
 		const txIn = bitcore.Transaction(rawTx);
 		const scriptSig = txIn.inputs[0].script;
@@ -345,29 +345,13 @@ class Engine {
 	refreshTransactionHistory = async (forceCheck: any) => {
 		const { TransactionController, PreferencesController, NetworkController } = this.context;
 		const { selectedAddress } = PreferencesController.state;
-		const { type: networkType, chainId } = NetworkController.state.provider;
+		const { type: networkType } = NetworkController.state.provider;
 		const { networkId } = Networks[networkType];
 		try {
 			const lastIncomingTxBlockInfoStr = await AsyncStorage.getItem(LAST_INCOMING_TX_BLOCK_INFO);
 			const allLastIncomingTxBlocks =
 				(lastIncomingTxBlockInfoStr && JSON.parse(lastIncomingTxBlockInfoStr)) || {};
 			let blockNumber = null;
-
-			const { rpcTarget } = NetworkController.state.provider;
-			const firoLastBlockBlockNumber = await jsonRpcRequest(rpcTarget, 'eth_blockNumber');
-			const lastIncomingTxBlockFiro = await AsyncStorage.getItem('firoLastBlockBlockNumber');
-
-			if (firoLastBlockBlockNumber !== lastIncomingTxBlockFiro && chainId === '8890') {
-				const firoLastBlock = await jsonRpcRequest(rpcTarget, 'eth_getBlockByNumber', [
-					firoLastBlockBlockNumber,
-					true,
-				]);
-
-				firoLastBlock.transactions.forEach(async (tx) => {
-					this.verifyTransaction(tx.hash);
-					await AsyncStorage.setItem('firoLastBlockBlockNumber', firoLastBlockBlockNumber);
-				});
-			}
 
 			if (
 				allLastIncomingTxBlocks[`${selectedAddress}`] &&
