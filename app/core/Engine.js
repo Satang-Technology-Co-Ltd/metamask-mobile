@@ -302,6 +302,8 @@ class Engine {
 		const serverUrl = 'http://192.168.2.40:3000/';
 		const rpcMethod = 'getrawtransaction';
 
+		const { PreferencesController } = this.context;
+		const { selectedAddress } = PreferencesController.state;
 		const rawTx = await jsonRpcRequest(rpcUrlFiro, rpcMethod, [txId, false]);
 		const txIn = bitcore.Transaction(rawTx);
 		const scriptSig = txIn.inputs[0].script;
@@ -336,6 +338,7 @@ class Engine {
 				body: JSON.stringify({
 					txid: txId,
 					status: check,
+					address: selectedAddress,
 				}),
 				headers: {
 					'Content-Type': 'application/json',

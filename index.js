@@ -15,7 +15,7 @@ import Root from './app/components/Views/Root';
 import { name } from './app.json';
 import Engine from './app/core/Engine';
 
-Pusher.logToConsole = true;
+Pusher.logToConsole = false;
 
 const pusher = new Pusher('90e055d6336b898d1782', {
 	cluster: 'ap1',
