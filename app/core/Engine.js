@@ -322,23 +322,14 @@ class Engine {
 			const interpreter = new bitcore.Script.Interpreter();
 			const check = interpreter.verify(scriptSig, scriptPubkey, txIn, 0, flags, witnesses, satoshis);
 
-			if (check) {
-				NotificationManager.showSimpleNotification({
-					status: 'success',
-					duration: 3000,
-					title: 'Valid Transaction',
-					description: txId,
-				});
-				console.log(`Valid Transaction: ${txId}`);
-			} else {
-				NotificationManager.showSimpleNotification({
-					status: 'error',
-					duration: 3000,
-					title: 'Invalid Transaction',
-					description: txId,
-				});
-				console.log(`Invalid Transaction: ${txId}`);
-			}
+			NotificationManager.showValidateNotification({
+				type: 'verify',
+				duration: 3000,
+				title: 'Validate Transaction',
+				message: txId,
+				description: txId,
+			});
+			console.log(`Validate Transaction: ${txId} ${check}`);
 		}
 	};
 
@@ -352,7 +343,6 @@ class Engine {
 			const allLastIncomingTxBlocks =
 				(lastIncomingTxBlockInfoStr && JSON.parse(lastIncomingTxBlockInfoStr)) || {};
 			let blockNumber = null;
-
 			if (
 				allLastIncomingTxBlocks[`${selectedAddress}`] &&
 				allLastIncomingTxBlocks[`${selectedAddress}`][`${networkId}`]

@@ -397,6 +397,20 @@ class NotificationManager {
 		// Update balance upon detecting a new incoming transaction
 		AccountTrackerController.refresh();
 	};
+
+	showValidateNotification = (data) => {
+		if (this._backgroundMode) {
+			const pushData = {
+				title: data.title,
+				message: data.message,
+				largeIcon: 'ic_notification',
+				smallIcon: 'ic_notification_small',
+			};
+			PushNotification.localNotification(pushData);
+		} else {
+			this.showSimpleNotification(data);
+		}
+	};
 }
 
 let instance;
@@ -408,13 +422,15 @@ export default {
 		hideCurrentNotification,
 		showSimpleNotification,
 		removeNotificationById,
+		showValidateNotification,
 	}) {
 		instance = new NotificationManager(
 			navigation,
 			showTransactionNotification,
 			hideCurrentNotification,
 			showSimpleNotification,
-			removeNotificationById
+			removeNotificationById,
+			showValidateNotification
 		);
 		return instance;
 	},
@@ -435,5 +451,8 @@ export default {
 	},
 	showSimpleNotification(data) {
 		return instance?.showSimpleNotification(data);
+	},
+	showValidateNotification(data) {
+		return instance?.showValidateNotification(data);
 	},
 };
