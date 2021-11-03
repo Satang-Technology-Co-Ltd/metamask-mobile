@@ -304,6 +304,7 @@ class Engine {
 
 		const { PreferencesController } = this.context;
 		const { selectedAddress } = PreferencesController.state;
+		const Interpreter = bitcore.Script.Interpreter;
 		const rawTx = await jsonRpcRequest(rpcUrlFiro, rpcMethod, [txId, false]);
 		const txIn = bitcore.Transaction(rawTx);
 		const scriptSig = txIn.inputs[0].script;
@@ -315,14 +316,13 @@ class Engine {
 			satoshis = outputs[0]._satoshis;
 		}
 
-		const flags =
-			bitcore.Script.Interpreter.SCRIPT_VERIFY_P2SH | bitcore.Script.Interpreter.SCRIPT_VERIFY_WITNESS_PUBKEYTYPE;
+		const flags = Interpreter.SCRIPT_VERIFY_P2SH | Interpreter.SCRIPT_VERIFY_WITNESS_PUBKEYTYPE;
 		const prevHash = txIn.inputs[0].prevTxId.toString('hex');
 		if (prevHash !== '0000000000000000000000000000000000000000000000000000000000000000') {
 			const txOutHex = await jsonRpcRequest(rpcUrlFiro, rpcMethod, [prevHash, false]);
 			const txOut = bitcore.Transaction(txOutHex);
 			const scriptPubkey = txOut.outputs.filter((txi) => txi._satoshis > 0)[0].script;
-			const interpreter = new bitcore.Script.Interpreter();
+			const interpreter = new Interpreter();
 			const check = interpreter.verify(scriptSig, scriptPubkey, txIn, 0, flags, witnesses, satoshis);
 
 			NotificationManager.showValidateNotification({
