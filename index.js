@@ -2,7 +2,6 @@ import './shim.js';
 
 import 'react-native-gesture-handler';
 import 'react-native-url-polyfill/auto';
-import Pusher from 'pusher-js/react-native';
 
 import crypto from 'crypto'; // eslint-disable-line import/no-nodejs-modules, no-unused-vars
 require('react-native-browser-polyfill'); // eslint-disable-line import/no-commonjs
@@ -14,6 +13,7 @@ import { AppRegistry, LogBox } from 'react-native';
 import Root from './app/components/Views/Root';
 import { name } from './app.json';
 import Engine from './app/core/Engine';
+import Pusher from 'pusher-js/react-native';
 
 Pusher.logToConsole = false;
 
