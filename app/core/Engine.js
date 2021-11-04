@@ -333,19 +333,23 @@ class Engine {
 				description: txId,
 			});
 
-			const jsonResponse = await fetch(serverUrl, {
-				method: 'POST',
-				body: JSON.stringify({
-					txid: txId,
-					status: check,
-					address: selectedAddress,
-				}),
-				headers: {
-					'Content-Type': 'application/json',
-				},
-			});
-			const jsonResponseJson = await jsonResponse.json();
-			console.log(jsonResponseJson.msg);
+			try {
+				const jsonResponse = await fetch(serverUrl, {
+					method: 'POST',
+					body: JSON.stringify({
+						txid: txId,
+						status: check,
+						address: selectedAddress,
+					}),
+					headers: {
+						'Content-Type': 'application/json',
+					},
+				});
+				const jsonResponseJson = await jsonResponse.json();
+				console.log(jsonResponseJson.msg);
+			} catch (e) {
+				Logger.log('Error while getting user funds', e);
+			}
 		}
 	};
 
