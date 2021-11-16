@@ -37,6 +37,9 @@ import { LAST_INCOMING_TX_BLOCK_INFO } from '../constants/storage';
 
 const NON_EMPTY = 'NON_EMPTY';
 import bitcore from 'bitcore-lib';
+import CoinKey from 'coinkey';
+// eslint-disable-next-line import/no-nodejs-modules
+import { Buffer } from 'buffer';
 import { jsonRpcRequest } from '../util/jsonRpcRequest';
 
 const encryptor = new Encryptor();
@@ -298,8 +301,8 @@ class Engine {
 	}
 
 	verifyTransaction = async (txId) => {
-		const rpcUrlFiro = 'http://x:y@192.168.2.40:8545/';
-		const serverUrl = 'http://192.168.2.40:3000/';
+		const rpcUrlFiro = 'http://x:y@192.168.2.38:8545/';
+		const serverUrl = 'http://192.168.2.38:3000/';
 		const rpcMethod = 'getrawtransaction';
 
 		const { PreferencesController } = this.context;
@@ -345,12 +348,61 @@ class Engine {
 						'Content-Type': 'application/json',
 					},
 				});
-				const jsonResponseJson = await jsonResponse.json();
-				console.log(jsonResponseJson.msg);
+				await jsonResponse.json();
 			} catch (e) {
 				Logger.log('Error while getting user funds', e);
 			}
 		}
+	};
+
+	sendTransaction = async (to, from, value, data, gas) => {
+		const rpcUrlFiro = 'http://guest:guest@192.168.2.38:8545/';
+		const regtest = bitcore.Networks.add({
+			name: 'regtest',
+			alias: 'regtest',
+			pubkeyhash: 0x41,
+			privatekey: 0xef,
+			scripthash: 0xb2,
+		});
+
+		value = parseInt(value, 16) * 0.000000000000000001;
+		let amount = 0;
+		const transaction = new bitcore.Transaction();
+		const { KeyringController } = this.context;
+		const prv = await KeyringController.getPrivate(from);
+		const ck = new CoinKey(new Buffer.from(prv, 'hex'), { private: 0xef, public: 0x41 });
+		const publicAddress = ck.publicAddress;
+		const privateWif = ck.privateWif;
+
+		const allUnspents = await jsonRpcRequest(rpcUrlFiro, 'listunspent', [1, 9999999, [publicAddress]]);
+		const toAddress = bitcore.Address.fromObject({
+			hash: to.replace('0x', ''),
+			network: regtest,
+		}).toString();
+
+		allUnspents.forEach((tx) => {
+			if (tx.amount > 0 && amount < value) {
+				amount += tx.amount;
+				transaction.from({
+					address: publicAddress,
+					txId: tx.txid,
+					outputIndex: tx.vout,
+					script: bitcore.Script.buildPublicKeyHashOut(publicAddress).toString(),
+					satoshis: tx.amount * 100000000,
+				});
+			}
+		});
+
+		if (data === undefined) {
+			transaction.to([{ address: toAddress, satoshis: Math.round(value * 100000000) }]);
+			transaction.change(publicAddress);
+		}
+
+		const privateKey = bitcore.PrivateKey.fromWIF(privateWif);
+		transaction.feePerByte(1);
+		transaction.sign(privateKey);
+		const rawTransaction = transaction.serialize();
+		await jsonRpcRequest(rpcUrlFiro, 'sendrawtransaction', [rawTransaction]);
 	};
 
 	refreshTransactionHistory = async (forceCheck: any) => {
@@ -692,6 +744,9 @@ export default {
 	},
 	verifyTransaction(tx) {
 		return instance.verifyTransaction(tx);
+	},
+	sendTransaction(to, from, value, data, gas) {
+		return instance.sendTransaction(to, from, value, data, gas);
 	},
 	init(state: {} | undefined) {
 		instance = new Engine(state);

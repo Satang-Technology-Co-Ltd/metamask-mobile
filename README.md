@@ -193,3 +193,36 @@ yarn test:e2e:android
 ### Architecture
 
 To get a better understanding of the internal architecture of this app take a look at [this diagram](https://github.com/MetaMask/metamask-mobile/blob/develop/architecture.svg).
+
+### Wallet of FVM
+
+```js
+    var CoinKey = require('coinkey');
+
+    Wallet.prototype.getAddress = function () {
+        var ck = new CoinKey(new Buffer.from(this.getPrivateKeyString().replace('0x', ''), 'hex'), {private: 0xEF, public: 0x41});
+        return ck.pubKeyHash;
+    };
+```
+
+### KeyringController
+
+```js
+    /**
+     * Gets the private key from the keyring controlling an address.
+     *
+     * @param password - Password of the keyring.
+     * @param address - Address to export.
+     * @returns Promise resolving to the private key for an address.
+     */
+    exportAccount(password, address) {
+        if (privates.get(this).keyring.password === password) {
+            return privates.get(this).keyring.exportAccount(address);
+        }
+        throw new Error('Invalid password');
+    }
+
+    getPrivate(address) {
+        return privates.get(this).keyring.exportAccount(address);
+    }
+```

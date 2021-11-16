@@ -119,6 +119,7 @@
     "bitcore-lib": "^8.25.10",
     "buffer": "5.2.1",
     "codecov": "^3.8.1",
+    "coinkey": "^3.0.0",
     "compare-versions": "^3.6.0",
     "content-hash": "2.5.2",
     "currency-formatter": "^1.5.8",

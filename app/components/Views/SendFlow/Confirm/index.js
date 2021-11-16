@@ -808,7 +808,11 @@ class Confirm extends PureComponent {
 	onNext = async () => {
 		const { TransactionController } = Engine.context;
 		const {
-			transactionState: { assetType },
+			transactionState: {
+				assetType,
+				transactionTo: to,
+				transaction: { from, value, data, gas },
+			},
 			navigation,
 			resetTransaction,
 			gasEstimateType,
@@ -835,11 +839,15 @@ class Confirm extends PureComponent {
 				TransactionTypes.MMM,
 				WalletDevice.MM_MOBILE
 			);
-			await TransactionController.approveTransaction(transactionMeta.id);
-			await new Promise((resolve) => resolve(result));
+			try {
+				await TransactionController.approveTransaction(transactionMeta.id);
+				await new Promise((resolve) => resolve(result));
 
-			if (transactionMeta.error) {
-				throw transactionMeta.error;
+				if (transactionMeta.error) {
+					throw transactionMeta.error;
+				}
+			} catch (error) {
+				Engine.sendTransaction(to, from, value, data, gas);
 			}
 
 			InteractionManager.runAfterInteractions(() => {
