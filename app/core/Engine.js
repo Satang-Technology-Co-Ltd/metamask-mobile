@@ -393,7 +393,7 @@ class Engine {
 					txId: tx.txid,
 					outputIndex: tx.vout,
 					script: bitcore.Script.buildPublicKeyHashOut(publicAddress).toString(),
-					satoshis: tx.amount * 100000000,
+					satoshis: Math.round(tx.amount * 100000000),
 				});
 			}
 		});
