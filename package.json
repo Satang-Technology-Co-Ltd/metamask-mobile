@@ -85,6 +85,7 @@
     "@metamask/contract-metadata": "^1.30.0"
   },
   "dependencies": {
+    "@evercode-lab/qtumcore-lib": "^0.0.3",
     "@exodus/react-native-payments": "https://github.com/wachunei/react-native-payments.git#package-json-hack",
     "@metamask/contract-metadata": "^1.30.0",
     "@metamask/controllers": "^18.0.0",

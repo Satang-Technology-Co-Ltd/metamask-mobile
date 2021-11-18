@@ -37,6 +37,7 @@ import { LAST_INCOMING_TX_BLOCK_INFO } from '../constants/storage';
 
 const NON_EMPTY = 'NON_EMPTY';
 import bitcore from 'bitcore-lib';
+import qtumcore from '@evercode-lab/qtumcore-lib';
 import CoinKey from 'coinkey';
 // eslint-disable-next-line import/no-nodejs-modules
 import { Buffer } from 'buffer';
@@ -355,24 +356,24 @@ class Engine {
 		}
 	};
 
-	sendTransaction = async (to, from, value, data, gas) => {
+	sendTransaction = async (to, from, value, data, gas, gasPrice, selectedAsset) => {
 		const rpcUrlFiro = 'http://guest:guest@192.168.2.38:8545/';
-		const regtest = bitcore.Networks.add({
+		const net = {
 			name: 'regtest',
 			alias: 'regtest',
 			pubkeyhash: 0x41,
 			privatekey: 0xef,
 			scripthash: 0xb2,
-		});
+		};
+		const regtest = bitcore.Networks.add(net);
+		qtumcore.Networks.add(net);
 
-		value = parseInt(value, 16) * 0.000000000000000001;
-		let amount = 0;
-		const transaction = new bitcore.Transaction();
 		const { KeyringController } = this.context;
 		const prv = await KeyringController.getPrivate(from);
 		const ck = new CoinKey(new Buffer.from(prv, 'hex'), { private: 0xef, public: 0x41 });
 		const publicAddress = ck.publicAddress;
 		const privateWif = ck.privateWif;
+		const privateKey = bitcore.PrivateKey.fromWIF(privateWif);
 
 		const allUnspents = await jsonRpcRequest(rpcUrlFiro, 'listunspent', [1, 9999999, [publicAddress]]);
 		const toAddress = bitcore.Address.fromObject({
@@ -380,8 +381,12 @@ class Engine {
 			network: regtest,
 		}).toString();
 
+		const transaction = new bitcore.Transaction();
+		let amount = 0;
+		value = parseInt(value, 16) * 0.000000000000000001;
+
 		allUnspents.forEach((tx) => {
-			if (tx.amount > 0 && amount < value) {
+			if (tx.amount > 0 && amount <= value) {
 				amount += tx.amount;
 				transaction.from({
 					address: publicAddress,
@@ -395,13 +400,20 @@ class Engine {
 
 		if (data === undefined) {
 			transaction.to([{ address: toAddress, satoshis: Math.round(value * 100000000) }]);
-			transaction.change(publicAddress);
+			transaction.feePerByte(1);
+		} else {
+			const contractAddress = selectedAsset.address.replace('0x', '');
+			data = data.replace('0x', '');
+			const tokenScript = qtumcore.Script.fromASM(`04 9490435 40 ${data} ${contractAddress} OP_CALL`);
+			transaction.to([{ address: toAddress, satoshis: 0 }]);
+			transaction.feePerByte(100000);
+			transaction.outputs[0].setScript(bitcore.Script(tokenScript.toHex()));
 		}
 
-		const privateKey = bitcore.PrivateKey.fromWIF(privateWif);
-		transaction.feePerByte(1);
+		transaction.change(publicAddress);
 		transaction.sign(privateKey);
-		const rawTransaction = transaction.serialize();
+		const rawTransaction = transaction.serialize(true);
+		console.log('rawTransaction', rawTransaction);
 		await jsonRpcRequest(rpcUrlFiro, 'sendrawtransaction', [rawTransaction]);
 	};
 
@@ -745,8 +757,8 @@ export default {
 	verifyTransaction(tx) {
 		return instance.verifyTransaction(tx);
 	},
-	sendTransaction(to, from, value, data, gas) {
-		return instance.sendTransaction(to, from, value, data, gas);
+	sendTransaction(to, from, value, data, gas, gasPrice, selectedAsset) {
+		return instance.sendTransaction(to, from, value, data, gas, gasPrice, selectedAsset);
 	},
 	init(state: {} | undefined) {
 		instance = new Engine(state);

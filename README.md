@@ -196,16 +196,22 @@ To get a better understanding of the internal architecture of this app take a lo
 
 ### Wallet of FVM
 
-```js
-    var CoinKey = require('coinkey');
+`node_modules/ethereumjs-wallet/dist/index.js`
 
+```js
+    /**
+     * Returns the wallet's address.
+     */
     Wallet.prototype.getAddress = function () {
+        var CoinKey = require('coinkey');
         var ck = new CoinKey(new Buffer.from(this.getPrivateKeyString().replace('0x', ''), 'hex'), {private: 0xEF, public: 0x41});
         return ck.pubKeyHash;
     };
 ```
 
 ### KeyringController
+
+`node_modules/@metamask/controllers/dist/keyring/KeyringController.js`
 
 ```js
     /**
@@ -225,4 +231,12 @@ To get a better understanding of the internal architecture of this app take a lo
     getPrivate(address) {
         return privates.get(this).keyring.exportAccount(address);
     }
+```
+
+### Qtum Core
+
+`node_modules/@evercode-lab/qtumcore-lib/index.js`
+
+```js
+// bitcore.crypto.Point = require('./lib/crypto/point');
 ```

@@ -809,9 +809,10 @@ class Confirm extends PureComponent {
 		const { TransactionController } = Engine.context;
 		const {
 			transactionState: {
+				selectedAsset,
 				assetType,
 				transactionTo: to,
-				transaction: { from, value, data, gas },
+				transaction: { from, value, data, gas, gasPrice },
 			},
 			navigation,
 			resetTransaction,
@@ -847,7 +848,7 @@ class Confirm extends PureComponent {
 					throw transactionMeta.error;
 				}
 			} catch (error) {
-				Engine.sendTransaction(to, from, value, data, gas);
+				Engine.sendTransaction(to, from, value, data, gas, gasPrice, selectedAsset);
 			}
 
 			InteractionManager.runAfterInteractions(() => {
