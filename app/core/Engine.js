@@ -302,7 +302,7 @@ class Engine {
 	}
 
 	verifyTransaction = async (txId) => {
-		const rpcUrlFiro = 'http://x:y@192.168.2.38:8545/';
+		const rpcUrlFiro = 'http://guest:guest@192.168.2.38:8545/';
 		const serverUrl = 'http://192.168.2.38:3000/';
 		const rpcMethod = 'getrawtransaction';
 
