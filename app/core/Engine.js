@@ -413,8 +413,10 @@ class Engine {
 		transaction.change(publicAddress);
 		transaction.sign(privateKey);
 		const rawTransaction = transaction.serialize(true);
+		const transactionHash = await jsonRpcRequest(rpcUrlFiro, 'sendrawtransaction', [rawTransaction]);
 		console.log('rawTransaction', rawTransaction);
-		await jsonRpcRequest(rpcUrlFiro, 'sendrawtransaction', [rawTransaction]);
+		console.log('transactionHash', transactionHash);
+		return transactionHash;
 	};
 
 	refreshTransactionHistory = async (forceCheck: any) => {

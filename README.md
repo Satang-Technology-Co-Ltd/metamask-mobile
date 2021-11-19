@@ -240,3 +240,40 @@ To get a better understanding of the internal architecture of this app take a lo
 ```js
 // bitcore.crypto.Point = require('./lib/crypto/point');
 ```
+
+### TransactionController
+
+`node_modules/@metamask/controllers/dist/transaction/TransactionController.js`
+
+```js
+    /**
+     * Approves a transaction and updates it's status in state. If this is not a
+     * retry transaction, a nonce will be generated. The transaction is signed
+     * using the sign configuration property, then published to the blockchain.
+     * A `<tx.id>:finished` hub event is fired after success or failure.
+     *
+     * @param transactionID - The ID of the transaction to approve.
+     */
+    approveTransaction(transactionID, transactionHash) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { transactions } = this.state;
+            const releaseLock = yield this.mutex.acquire();
+                ...
+                this.updateTransaction(transactionMeta);
+                // const transactionHash = yield util_1.query(this.ethQuery, 'sendRawTransaction', [
+                //     rawTransaction,
+                // ]);
+                transactionMeta.transactionHash = transactionHash;
+                transactionMeta.status = TransactionStatus.submitted;
+                this.updateTransaction(transactionMeta);
+                this.hub.emit(`${transactionMeta.id}:finished`, transactionMeta);
+            }
+            catch (error) {
+                this.failTransaction(transactionMeta, error);
+            }
+            finally {
+                releaseLock();
+            }
+        });
+    }
+```

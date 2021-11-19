@@ -840,15 +840,13 @@ class Confirm extends PureComponent {
 				TransactionTypes.MMM,
 				WalletDevice.MM_MOBILE
 			);
-			try {
-				await TransactionController.approveTransaction(transactionMeta.id);
-				await new Promise((resolve) => resolve(result));
 
-				if (transactionMeta.error) {
-					throw transactionMeta.error;
-				}
-			} catch (error) {
-				Engine.sendTransaction(to, from, value, data, gas, gasPrice, selectedAsset);
+			const transactionHash = await Engine.sendTransaction(to, from, value, data, gas, gasPrice, selectedAsset);
+			await TransactionController.approveTransaction(transactionMeta.id, transactionHash);
+			await new Promise((resolve) => resolve(result));
+
+			if (transactionMeta.error) {
+				throw transactionMeta.error;
 			}
 
 			InteractionManager.runAfterInteractions(() => {
