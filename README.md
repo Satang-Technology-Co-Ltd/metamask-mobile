@@ -202,6 +202,7 @@ To get a better understanding of the internal architecture of this app take a lo
     /**
      * Returns the wallet's address.
      */
+    # TODO Modify func getAddress for convert address
     Wallet.prototype.getAddress = function () {
         var CoinKey = require('coinkey');
         var ck = new CoinKey(new Buffer.from(this.getPrivateKeyString().replace('0x', ''), 'hex'), {private: 0xEF, public: 0x41});
@@ -228,6 +229,7 @@ To get a better understanding of the internal architecture of this app take a lo
         throw new Error('Invalid password');
     }
 
+    # TODO Add func for get prv
     getPrivate(address) {
         return privates.get(this).keyring.exportAccount(address);
     }
@@ -238,6 +240,7 @@ To get a better understanding of the internal architecture of this app take a lo
 `node_modules/@evercode-lab/qtumcore-lib/index.js`
 
 ```js
+# TODO find and comment this line
 // bitcore.crypto.Point = require('./lib/crypto/point');
 ```
 
@@ -260,10 +263,13 @@ To get a better understanding of the internal architecture of this app take a lo
             const releaseLock = yield this.mutex.acquire();
                 ...
                 this.updateTransaction(transactionMeta);
+
+                # TODO comment and use transactionHash from input
                 // const transactionHash = yield util_1.query(this.ethQuery, 'sendRawTransaction', [
                 //     rawTransaction,
                 // ]);
                 transactionMeta.transactionHash = transactionHash;
+
                 transactionMeta.status = TransactionStatus.submitted;
                 this.updateTransaction(transactionMeta);
                 this.hub.emit(`${transactionMeta.id}:finished`, transactionMeta);
@@ -273,6 +279,26 @@ To get a better understanding of the internal architecture of this app take a lo
             }
             finally {
                 releaseLock();
+            }
+        });
+    }
+
+    /**
+     * Method to verify the state of a transaction using the Blockchain as a source of truth.
+     *
+     * @param meta - The local transaction to verify on the blockchain.
+     * @returns A tuple containing the updated transaction, and whether or not an update was required.
+     */
+    blockchainTransactionStateReconciler(meta) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { status, transactionHash } = meta;
+                ...
+                case TransactionStatus.submitted:
+                    # TODO Change method getTransactionByHash to getTransactionReceipt
+                    const txObj = yield util_1.query(this.ethQuery, 'getTransactionReceipt', [
+                        transactionHash,
+                    ]);
+                ...
             }
         });
     }
