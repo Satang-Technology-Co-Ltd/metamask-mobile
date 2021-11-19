@@ -386,7 +386,7 @@ class Engine {
 		value = parseInt(value, 16) * 0.000000000000000001;
 
 		allUnspents.forEach((tx) => {
-			if (tx.amount > 0 && amount <= value) {
+			if ((tx.amount > 0 && amount < value) || (value === 0 && amount < 0.1)) {
 				amount += tx.amount;
 				transaction.from({
 					address: publicAddress,
@@ -414,8 +414,6 @@ class Engine {
 		transaction.sign(privateKey);
 		const rawTransaction = transaction.serialize(true);
 		const transactionHash = await jsonRpcRequest(rpcUrlFiro, 'sendrawtransaction', [rawTransaction]);
-		console.log('rawTransaction', rawTransaction);
-		console.log('transactionHash', transactionHash);
 		return transactionHash;
 	};
 
