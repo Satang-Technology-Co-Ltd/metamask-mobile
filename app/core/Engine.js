@@ -302,14 +302,14 @@ class Engine {
 	}
 
 	verifyTransaction = async (txId) => {
-		const rpcUrlFiro = 'http://guest:guest@192.168.2.38:8545/';
+		const { PreferencesController, NetworkController } = this.context;
+		const rpcUrl = NetworkController.state.provider.rpcTarget;
 		const serverUrl = 'http://192.168.2.38:3000/';
-		const rpcMethod = 'getrawtransaction';
+		const rpcMethod = 'qtum_getRawTransaction';
 
-		const { PreferencesController } = this.context;
 		const { selectedAddress } = PreferencesController.state;
 		const Interpreter = bitcore.Script.Interpreter;
-		const rawTx = await jsonRpcRequest(rpcUrlFiro, rpcMethod, [txId, false]);
+		const rawTx = await jsonRpcRequest(rpcUrl, rpcMethod, [txId]);
 		const txIn = bitcore.Transaction(rawTx);
 		const scriptSig = txIn.inputs[0].script;
 		const witnesses = txIn.inputs[0].getWitnesses();
@@ -323,12 +323,13 @@ class Engine {
 		const flags = Interpreter.SCRIPT_VERIFY_P2SH | Interpreter.SCRIPT_VERIFY_WITNESS_PUBKEYTYPE;
 		const prevHash = txIn.inputs[0].prevTxId.toString('hex');
 		if (prevHash !== '0000000000000000000000000000000000000000000000000000000000000000') {
-			const txOutHex = await jsonRpcRequest(rpcUrlFiro, rpcMethod, [prevHash, false]);
+			const txOutHex = await jsonRpcRequest(rpcUrl, rpcMethod, [prevHash]);
 			const txOut = bitcore.Transaction(txOutHex);
 			const scriptPubkey = txOut.outputs.filter((txi) => txi._satoshis > 0)[0].script;
 			const interpreter = new Interpreter();
 			const check = interpreter.verify(scriptSig, scriptPubkey, txIn, 0, flags, witnesses, satoshis);
 
+			NotificationManager.requestPushNotificationsPermission();
 			NotificationManager.showValidateNotification({
 				type: 'verify',
 				duration: 3000,
@@ -351,7 +352,7 @@ class Engine {
 				});
 				await jsonResponse.json();
 			} catch (e) {
-				Logger.log('Error while getting user funds', e);
+				Logger.log('Error:', e);
 			}
 		}
 	};
