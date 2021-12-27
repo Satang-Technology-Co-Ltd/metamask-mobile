@@ -1221,7 +1221,7 @@
     "@ethersproject/properties" "^5.4.0"
     "@ethersproject/strings" "^5.4.0"
 
-"@evercode-lab/qtumcore-lib@^0.0.3":
+"@evercode-lab/qtumcore-lib@0.0.3":
   version "0.0.3"
   resolved "https://registry.yarnpkg.com/@evercode-lab/qtumcore-lib/-/qtumcore-lib-0.0.3.tgz#637a6360a63aa8f5db76a89f5c4fea4de193f69c"
   integrity sha512-n7l2GAfhAu2lrWWDghtG4zjanG03ybUwvFBkHhxtKK37bs2keVJ7rrBXZBUcWu1tNN09EtpMMZ+y/3eQ1eWJZg==
@@ -1880,10 +1880,10 @@
   resolved "https://registry.yarnpkg.com/@react-native-community/masked-view/-/masked-view-0.1.11.tgz#2f4c6e10bee0786abff4604e39a37ded6f3980ce"
   integrity sha512-rQfMIGSR/1r/SyN87+VD8xHHzDYeHaJq6elOSCAD+0iLagXkSI2pfA0LmSXP21uw5i3em7GkkRjfJ8wpqWXZNw==
 
-"@react-native-community/netinfo@^6.0.0":
-  version "6.2.1"
-  resolved "https://registry.yarnpkg.com/@react-native-community/netinfo/-/netinfo-6.2.1.tgz#212487d84a3476268e278f4c017ff5c7f37e69c0"
-  integrity sha512-742sh+NMbPo59MaLRXBWwkT5K6HQPrmoS0pg0z9QuXshXieQIOTkqEEDMkQZS0QnS8fPFr8MxMPw/TAxH9b8Ig==
+"@react-native-community/netinfo@6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@react-native-community/netinfo/-/netinfo-6.0.0.tgz#2a4d7190b508dd0c2293656c9c1aa068f6f60a71"
+  integrity sha512-Z9M8VGcF2IZVOo2x+oUStvpCW/8HjIRi4+iQCu5n+PhC7OqCQX58KYAzdBr///alIfRXiu6oMb+lK+rXQH1FvQ==
 
 "@react-native-community/picker@^1.8.1":
   version "1.8.1"
@@ -3532,7 +3532,7 @@ bip66@^1.1.5:
   dependencies:
     safe-buffer "^5.0.1"
 
-bitcore-lib@^8.25.10:
+bitcore-lib@8.25.10:
   version "8.25.10"
   resolved "https://registry.yarnpkg.com/bitcore-lib/-/bitcore-lib-8.25.10.tgz#4bbb30932dec65cb76e4d1d793f55d7e4a75f071"
   integrity sha512-MyHpSg7aFRHe359RA/gdkaQAal3NswYZTLEuu0tGX1RGWXAYN9i/24fsjPqVKj+z0ua+gzAT7aQs0KiKXWCgKA==
@@ -4217,7 +4217,7 @@ codecov@^3.8.1:
     teeny-request "7.0.1"
     urlgrey "0.4.4"
 
-coinkey@^3.0.0:
+coinkey@3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/coinkey/-/coinkey-3.0.0.tgz#950879214c914668f54eeb7c9c3f69bc73f9b5ba"
   integrity sha512-AuZF2tkEmWDbPtvahcwLnyuCyF4S5RIHynieKAKTerVIRLXKnWD4/cvV/2xqV/dNrzBsrAcJdfVRx45aTWU8Qw==
@@ -11275,7 +11275,7 @@ punycode@^2.1.0, punycode@^2.1.1:
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-2.1.1.tgz#b58b010ac40c22c5657616c8d2c2c02c7bf479ec"
   integrity sha512-XRsRjdf+j5ml+y/6GKHPZbrF/8p2Yga0JPtdqTIY2Xe5ohJPD9saDJJLPvp9+NSBprVvevdXZybnj2cv8OEd0A==
 
-pusher-js@^7.0.3:
+pusher-js@7.0.3:
   version "7.0.3"
   resolved "https://registry.yarnpkg.com/pusher-js/-/pusher-js-7.0.3.tgz#f81c78cdf2ad32f546caa7532ec7f9081ef00b8d"
   integrity sha512-HIfCvt00CAqgO4W0BrdpPsDcAwy51rB6DN0VMC+JeVRRbo8mn3XTeUeIFjmmlRLZLX8rPhUtLRo7vPag6b8GCw==
