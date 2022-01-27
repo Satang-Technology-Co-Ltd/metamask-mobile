@@ -304,12 +304,28 @@ class Engine {
 	verifyTransaction = async (txId) => {
 		const { PreferencesController, NetworkController } = this.context;
 		const rpcUrl = NetworkController.state.provider.rpcTarget;
-		const serverUrl = 'http://192.168.2.38:3000/';
+		const serverUrl = 'http://192.168.2.35:3000/';
 		const rpcMethod = 'qtum_getRawTransaction';
 
 		const { selectedAddress } = PreferencesController.state;
 		const Interpreter = bitcore.Script.Interpreter;
-		const rawTx = await jsonRpcRequest(rpcUrl, rpcMethod, [txId]);
+
+		const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+		let rawTx;
+		for (let i = 0; i < 3; i++) {
+			try {
+				rawTx = await jsonRpcRequest(rpcUrl, rpcMethod, [txId]);
+				break;
+			} catch (error) {
+				if (i < 3) {
+					Logger.log('The server is syncing.');
+					await sleep(5000);
+					continue;
+				}
+				throw error;
+			}
+		}
+
 		const txIn = bitcore.Transaction(rawTx);
 		const scriptSig = txIn.inputs[0].script;
 		const witnesses = txIn.inputs[0].getWitnesses();
