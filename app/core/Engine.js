@@ -36,8 +36,6 @@ import Logger from '../util/Logger';
 import { LAST_INCOMING_TX_BLOCK_INFO } from '../constants/storage';
 
 const NON_EMPTY = 'NON_EMPTY';
-// import bitcore from 'bitcore-lib';
-// import qtumcore from '@evercode-lab/qtumcore-lib';
 // eslint-disable-next-line import/no-namespace
 import * as fvmcore from 'fvmcore-lib';
 import CoinKey from 'coinkey';
