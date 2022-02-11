@@ -85,7 +85,6 @@
     "@metamask/contract-metadata": "^1.30.0"
   },
   "dependencies": {
-    "@evercode-lab/qtumcore-lib": "0.0.3",
     "@exodus/react-native-payments": "https://github.com/wachunei/react-native-payments.git#package-json-hack",
     "@metamask/contract-metadata": "^1.30.0",
     "@metamask/controllers": "^18.0.0",
@@ -117,7 +116,6 @@
     "babel-plugin-transform-remove-console": "6.9.4",
     "base-64": "1.0.0",
     "bignumber.js": "^9.0.1",
-    "bitcore-lib": "8.25.10",
     "buffer": "5.2.1",
     "codecov": "^3.8.1",
     "coinkey": "3.0.0",
@@ -140,6 +138,7 @@
     "ethjs-unit": "0.1.6",
     "events": "3.0.0",
     "fuse.js": "3.4.4",
+    "fvmcore-lib": "https://gitpkg.now.sh/Satang-Technology-Co-Ltd/bitcore/packages/bitcore-lib-fvm?d02e926a229ca8e38d24c90ebe87a4dec81cb249",
     "https-browserify": "0.0.1",
     "human-standard-token-abi": "^2.0.0",
     "humanize-duration": "^3.27.0",

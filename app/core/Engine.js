@@ -36,8 +36,10 @@ import Logger from '../util/Logger';
 import { LAST_INCOMING_TX_BLOCK_INFO } from '../constants/storage';
 
 const NON_EMPTY = 'NON_EMPTY';
-import bitcore from 'bitcore-lib';
-import qtumcore from '@evercode-lab/qtumcore-lib';
+// import bitcore from 'bitcore-lib';
+// import qtumcore from '@evercode-lab/qtumcore-lib';
+// eslint-disable-next-line import/no-namespace
+import * as fvmcore from 'fvmcore-lib';
 import CoinKey from 'coinkey';
 // eslint-disable-next-line import/no-nodejs-modules
 import { Buffer } from 'buffer';
@@ -308,7 +310,7 @@ class Engine {
 		const rpcMethod = 'qtum_getRawTransaction';
 
 		const { selectedAddress } = PreferencesController.state;
-		const Interpreter = bitcore.Script.Interpreter;
+		const Interpreter = fvmcore.Script.Interpreter;
 
 		const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 		let rawTx;
@@ -326,7 +328,7 @@ class Engine {
 			}
 		}
 
-		const txIn = bitcore.Transaction(rawTx);
+		const txIn = fvmcore.Transaction(rawTx);
 		const scriptSig = txIn.inputs[0].script;
 		const witnesses = txIn.inputs[0].getWitnesses();
 		const outputs = txIn.outputs.filter((tx) => tx._satoshis > 0);
@@ -340,7 +342,7 @@ class Engine {
 		const prevHash = txIn.inputs[0].prevTxId.toString('hex');
 		if (prevHash !== '0000000000000000000000000000000000000000000000000000000000000000') {
 			const txOutHex = await jsonRpcRequest(rpcUrl, rpcMethod, [prevHash]);
-			const txOut = bitcore.Transaction(txOutHex);
+			const txOut = fvmcore.Transaction(txOutHex);
 			const scriptPubkey = txOut.outputs.filter((txi) => txi._satoshis > 0)[0].script;
 			const interpreter = new Interpreter();
 			const check = interpreter.verify(scriptSig, scriptPubkey, txIn, 0, flags, witnesses, satoshis);
@@ -376,21 +378,11 @@ class Engine {
 	sendTransaction = async (to, from, value, data, gas, gasPrice, selectedAsset) => {
 		const { KeyringController, NetworkController } = this.context;
 		const rpcUrl = NetworkController.state.provider.rpcTarget;
-		const net = {
-			name: 'regtest',
-			alias: 'regtest',
-			pubkeyhash: 0x41,
-			privatekey: 0xef,
-			scripthash: 0xb2,
-		};
-		const regtest = bitcore.Networks.add(net);
-		qtumcore.Networks.add(net);
-
 		const prv = await KeyringController.getPrivate(from);
 		const ck = new CoinKey(new Buffer.from(prv, 'hex'), { private: 0xef, public: 0x41 });
 		const publicAddress = ck.publicAddress;
 		const privateWif = ck.privateWif;
-		const privateKey = bitcore.PrivateKey.fromWIF(privateWif);
+		const privateKey = fvmcore.PrivateKey.fromWIF(privateWif);
 
 		value = parseInt(value, 16) * 0.000000000000000001;
 		const allUnspents = await jsonRpcRequest(rpcUrl, 'qtum_getUTXOs', [from, value || 1]);
@@ -399,46 +391,51 @@ class Engine {
 			to = to.replace('0x', '');
 		}
 		const sender = from.replace('0x', '');
-		const toAddress = bitcore.Address.fromObject({
+		const toAddress = fvmcore.Address.fromObject({
 			hash: to || sender,
-			network: regtest,
 		}).toString();
 
-		const transaction = new bitcore.Transaction();
+		const transaction = new fvmcore.Transaction();
 		allUnspents.forEach((tx) => {
 			transaction.from({
 				address: publicAddress,
 				txId: tx.txid,
 				outputIndex: tx.vout,
-				script: bitcore.Script.buildPublicKeyHashOut(publicAddress).toString(),
+				script: fvmcore.Script.buildPublicKeyHashOut(publicAddress).toString(),
 				satoshis: Math.round(tx.amount * 100000000),
 			});
 		});
 
 		if (typeof data === 'undefined') {
 			transaction.to([{ address: toAddress, satoshis: Math.round(value * 100000000) }]);
-			transaction.feePerByte(1000);
+			transaction.feePerByte(1);
 		} else {
 			data = data.replace('0x', '');
 			transaction.to([{ address: toAddress, satoshis: 0 }]);
-			transaction.feePerByte(100000);
+			transaction.feePerByte(100);
 			const contractAddress = selectedAsset.address.replace('0x', '');
 
-			// Find gas price for fvm
 			let gasFVM = parseInt(`${gas}`);
 			gasFVM = gasFVM > 250000 ? gasFVM : 250000;
-			const hexGasFVM = gasFVM.toString(16).padStart(6, '0');
-			const reverseHexGasFVM = Buffer.from(hexGasFVM, 'hex').reverse().toString('hex');
-			const gasLimitFVM = parseInt(reverseHexGasFVM, 16);
 
+			const script = new fvmcore.Script();
 			if (contractAddress) {
-				const tokenScript = qtumcore.Script.fromASM(
-					`04 ${gasLimitFVM} ${gasPrice} ${data} ${contractAddress} OP_CALL`
-				);
-				transaction.outputs[0].setScript(bitcore.Script(tokenScript.toHex()));
+				script
+					.add(Buffer.from('04', 'hex'))
+					.add(fvmcore.crypto.BN.fromNumber(gasFVM).toScriptNumBuffer())
+					.add(fvmcore.crypto.BN.fromString(gasPrice).toScriptNumBuffer())
+					.add(Buffer.from(data, 'hex'))
+					.add(Buffer.from(contractAddress, 'hex'))
+					.add('OP_CALL');
+				transaction.outputs[0].setScript(fvmcore.Script(script.toHex()));
 			} else {
-				const tokenScript = qtumcore.Script.fromASM(`04 ${gasLimitFVM} ${gasPrice} ${data} OP_CREATE`);
-				transaction.outputs[0].setScript(bitcore.Script(tokenScript.toHex()));
+				script
+					.add(Buffer.from('04', 'hex'))
+					.add(fvmcore.crypto.BN.fromNumber(gasFVM).toScriptNumBuffer())
+					.add(fvmcore.crypto.BN.fromString(gasPrice).toScriptNumBuffer())
+					.add(Buffer.from(data, 'hex'))
+					.add('OP_CREATE');
+				transaction.outputs[0].setScript(fvmcore.Script(script.toHex()));
 			}
 		}
 
