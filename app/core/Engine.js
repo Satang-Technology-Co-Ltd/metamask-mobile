@@ -304,7 +304,7 @@ class Engine {
 	verifyTransaction = async (txId) => {
 		const { PreferencesController, NetworkController } = this.context;
 		const rpcUrl = NetworkController.state.provider.rpcTarget;
-		const serverUrl = 'http://192.168.2.35:3000/';
+		const serverUrl = process.env.SERVER_URL;
 		const rpcMethod = 'qtum_getRawTransaction';
 
 		const { selectedAddress } = PreferencesController.state;

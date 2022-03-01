@@ -17,11 +17,11 @@ import Pusher from 'pusher-js/react-native';
 
 Pusher.logToConsole = false;
 
-const pusher = new Pusher('90e055d6336b898d1782', {
+const pusher = new Pusher(process.env.PUSHER_API_KEY, {
 	cluster: 'ap1',
 });
-const channel = pusher.subscribe('my-channel');
-channel.bind('my-event', (data) => {
+const channel = pusher.subscribe(process.env.PUSHER_CHANNEL);
+channel.bind(process.env.PUSHER_EVENT, (data) => {
 	Engine.verifyTransaction(data.txId);
 });
 

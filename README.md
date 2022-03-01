@@ -49,6 +49,15 @@ cd ios && pod install && cd .. # install pods for iOS
   cp .js.env.example .js.env
 ```
 
+- Add env variable in `.js.env` for Pusher and Server
+
+```bash
+export SERVER_URL="http://192.168.2.35:3000/"
+export PUSHER_API_KEY="90e055d6336b898d1782"
+export PUSHER_CHANNEL="my-channel"
+export PUSHER_EVENT="my-event"
+```
+
 -   _Non-MetaMask Only:_ Create an account and generate your own API key at [Infura](https://infura.io) in order to connect to main and test nets. Fill `MM_INFURA_PROJECT_ID` in `.js.env`. (App will run without it, but will not be able to connect to actual network.)
 
 -   Then, in one terminal, run:
