@@ -44,6 +44,43 @@
 
 11 - Start rollout to ALPHA
 
+## Android build apk on local
+
+- Start emulator or `yarn start:android`
+
+- Generate keystore at `android/keystores/release.keystore`
+
+```bash
+cd android
+keytool -genkey -v -keystore keystores/release.keystore -storepass android -alias androiddebugkey -keyalg RSA -keysize 2048 -keypass android -validity 10000 -dname "CN=Android Release,O=Android,C=US"
+```
+
+- Config sentry at `sentry.properties`
+
+Ex:
+
+```properties
+defaults.url=https://sentry.io/
+defaults.org=satang
+defaults.project=metamask-mobile
+auth.token=9d7527774a4649b78413e3d311edadaca78e171586764697be953d5e7670dceb
+cli.executable=node_modules/@sentry/cli/bin/sentry-cli
+```
+
+- Add env
+
+```bash
+export METAMASK_ENVIRONMENT='local'
+export BITRISEIO_ANDROID_KEYSTORE_PASSWORD=android
+export BITRISEIO_ANDROID_KEYSTORE_ALIAS=androiddebugkey
+export BITRISEIO_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD=android
+```
+
+- Run command for build apk
+
+```bash
+yarn build:android:release
+```
 
 ### Once you're done with both stores:
 - Submit a PR with the changes
